@@ -1,12 +1,8 @@
 from peewee import Model, AutoField, DateTimeField, ForeignKeyField
 from datetime import datetime
-from Model.BD import db
+from Model.BaseModel import BaseModel
 from Model.Filme import Filme
 from Model.Sala import Sala
-
-class BaseModel(Model):
-    class Meta:
-        database = db
 
 class Sessao(BaseModel):
     id_sessao = AutoField(primary_key=True)

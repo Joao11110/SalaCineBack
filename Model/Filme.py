@@ -1,9 +1,5 @@
 from peewee import Model, AutoField, CharField, IntegerField, CharField
-from Model.BD import db
-
-class BaseModel(Model):
-    class Meta:
-        database = db
+from Model.BaseModel import BaseModel
 
 class Filme(BaseModel):
     id_filme = AutoField(primary_key=True)

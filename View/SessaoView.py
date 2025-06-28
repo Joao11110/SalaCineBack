@@ -21,7 +21,21 @@ def cadastrar_sessao():
     if not sessao:
         return jsonify({'error': 'Não foi possível agendar a sessão'}), 400
 
-    return jsonify({'id_sessao': sessao.get_id_sessao()}), 201
+    return jsonify({
+        'message': 'Sessão cadastrada com sucesso',
+        'sessao': {
+            'id_sessao': sessao.get_id_sessao(),
+            'data_hora': sessao.data_hora.isoformat(),
+            'filme': {
+                'id_filme': sessao.filme.get_id_filme(),
+                'titulo': sessao.filme.titulo
+            },
+            'sala': {
+                'id_sala': sessao.sala.get_id_sala(),
+                'numero_sala': sessao.sala.numero_sala
+            }
+        }
+    }), 201
 
 # @sessao_bp.route('/sessoes', methods=['GET'])
 # def listar_sessoes():
