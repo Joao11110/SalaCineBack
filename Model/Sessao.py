@@ -11,7 +11,7 @@ class Sessao(BaseModel):
     sala = ForeignKeyField(Sala, backref='sessoes')
 
     @classmethod
-    def cadastrar_filme(cls, filme, sala, data_hora):
+    def cadastrar_sessao(cls, filme, sala, data_hora):
         return cls.create(
             filme=filme,
             sala=sala,
@@ -36,10 +36,10 @@ class Sessao(BaseModel):
         ).exists()
 
     @classmethod
-    def editar_filme(cls, id_filme=int, **kwargs):
+    def editar_sessao(cls, id_filme=int, **kwargs):
         query = cls.update(**kwargs).where(cls.id_filme == id_filme)
         return query.execute()
 
     @classmethod
-    def excluir_filme(cls, id_filme=int):
+    def excluir_sessao(cls, id_filme=int):
         return cls.delete().where(cls.id_filme == id_filme).execute()
