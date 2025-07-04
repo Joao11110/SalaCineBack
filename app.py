@@ -1,10 +1,12 @@
 from flask import Flask, jsonify
+from flask_cors import CORS
 from Model.Connect import initialize_db
 from View.FilmeView import filme_bp
 from View.SalaView import sala_bp
 from View.SessaoView import sessao_bp
 
 app = Flask(__name__)
+CORS(app)
 
 app.register_blueprint(filme_bp, url_prefix='/api')
 app.register_blueprint(sala_bp, url_prefix='/api')
@@ -25,4 +27,4 @@ def home():
 initialize_db()
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
