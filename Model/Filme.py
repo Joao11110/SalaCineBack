@@ -3,34 +3,35 @@ from Model.BaseModel import BaseModel
 
 class Filme(BaseModel):
     id_filme = AutoField(primary_key=True)
-    titulo = CharField(max_length=100)
+    titulo = CharField(max_length=150)
     duracao = IntegerField()
     classificacao = IntegerField()
+    diretor = CharField(max_length=150)
     genero = CharField(max_length=50)
-    diretor = CharField(max_length=100)
 
     @classmethod
-    def cadastrar_filme(cls, titulo=str, duracao=int, classificacao=int, genero=str, diretor=str):
+    def create(cls, titulo=str, duracao=int, classificacao=int, diretor=str, genero=str):
         return cls.create(
             titulo=titulo,
             duracao=duracao,
             classificacao=classificacao,
-            genero=genero,
-            diretor=diretor
+            diretor=diretor,
+            genero=genero
         )
 
     @classmethod
-    def buscar_por_titulo(cls, titulo=str):
+    def readByTitulo(cls, titulo=str):
         return cls.select().where(cls.titulo.contains(titulo))
 
-    def get_id_filme(self):
-        return self.id_filme
-
     @classmethod
-    def editar_filme(cls, id_filme=int, **kwargs):
+    def update(cls, id_filme=int, **kwargs):
         query = cls.update(**kwargs).where(cls.id_filme == id_filme)
         return query.execute()
 
     @classmethod
-    def excluir_filme(cls, id_filme=int):
+    def delete(cls, id_filme=int):
         return cls.delete().where(cls.id_filme == id_filme).execute()
+
+    @classmethod
+    def getIdFilme(self):
+        return self.id_filme

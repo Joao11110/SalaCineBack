@@ -5,28 +5,28 @@ from datetime import datetime
 filme_bp = Blueprint('filme', __name__)
 
 @filme_bp.route('/filmes', methods=['POST'])
-def cadastrar_filme():
+def cadastrarFilme():
     data = request.get_json()
 
-    required_fields = ['titulo', 'duracao', 'classificacao', 'genero', 'diretor']
+    required_fields = ['titulo', 'duracao', 'classificacao', 'diretor', 'genero']
     if not all(field in data for field in required_fields):
         return jsonify({'error': 'Campos obrigatórios faltando'}), 400
-    
+
     try:
         filme = FilmeController.cadastrar(
             titulo=data['titulo'],
             duracao=int(data['duracao']),
             classificacao=int(data['classificacao']),
+            diretor=data['diretor'],
             genero=data['genero'],
-            diretor=data['diretor']
         )
     except ValueError as e:
         return jsonify({'error': 'Dados inválidos', 'details': str(e)}), 400
 
     return jsonify({
-        'message': 'Filme cadastrado com sucesso',
+        'message': 'Filme cadastrado com sucesso.',
         'filme': {
-            'id_filme': filme.get_id_filme(),
+            'id_filme': filme.id_filme,
             'titulo': filme.titulo,
             'duracao': filme.duracao,
             'classificacao': filme.classificacao,
@@ -35,6 +35,21 @@ def cadastrar_filme():
             'data_cadastro': datetime.now().isoformat()
         }
     }), 201
+
+@filme_bp.route('/filmes', methods=['GET'])
+def buscarFilmes():
+    filmes = FilmeController.read()
+
+    if filmes:
+        return jsonify([{
+            'id_filme': f.id_filme,
+            'titulo': f.titulo,
+            'duracao': f.duracao,
+            'classificacao': f.classificacao,
+            'diretor': f.diretor,
+            'genero': f.genero
+        } for f in filmes]), 200
+    return jsonify({'message': 'Filme não foi encontrado.'}), 404
 
 # @filme_bp.route('/filmes/<int:id_filme>', methods=['PUT'])
 # def editar_filme(id_filme):
@@ -46,16 +61,3 @@ def cadastrar_filme():
 # def excluir_filme(id_filme):
 #     deleted = FilmeController.excluir(id_filme)
 #     return jsonify({'deleted': deleted}), 200
-
-# @filme_bp.route('/filmes', methods=['GET'])
-# def buscar_filmes():
-#     titulo = request.args.get('titulo', '')
-#     filmes = FilmeController.buscar_por_titulo(titulo)
-#     return jsonify([{
-#         'id_filme': f.get_id_filme(),
-#         'titulo': f.titulo,
-#         'duracao': f.duracao,
-#         'classificacao': f.classificacao,
-#         'genero': f.genero,
-#         'diretor': f.diretor
-#     } for f in filmes]), 200

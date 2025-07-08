@@ -1,4 +1,7 @@
-datetime
-pathlib
-peewee
+# API
+flask-cors
 flask
+
+# Python
+datetime
+peewee

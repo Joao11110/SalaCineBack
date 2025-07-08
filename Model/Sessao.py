@@ -11,7 +11,7 @@ class Sessao(BaseModel):
     sala = ForeignKeyField(Sala, backref='sessoes')
 
     @classmethod
-    def cadastrar_sessao(cls, filme, sala, data_hora):
+    def create(cls, filme=int, sala=int, data_hora=str):
         return cls.create(
             filme=filme,
             sala=sala,
@@ -19,27 +19,28 @@ class Sessao(BaseModel):
         )
 
     @classmethod
-    def listar_por_data(cls, data=None):
+    def readByDate(cls, data=None):
         query = cls.select()
         if data:
             query = query.where(cls.data_hora.date() == data.date())
         return query.order_by(cls.data_hora)
 
-    def get_id_sessao(self):
-        return self.id_sessao
-
     @classmethod
-    def listar_por_sala_e_horario(cls, sala, data_hora):
+    def readBySalaAndDate(cls, sala, data_hora):
         return cls.select().where(
             (cls.sala == sala) &
             (cls.data_hora == data_hora)
         ).exists()
 
     @classmethod
-    def editar_sessao(cls, id_filme=int, **kwargs):
+    def update(cls, id_filme=int, **kwargs):
         query = cls.update(**kwargs).where(cls.id_filme == id_filme)
         return query.execute()
 
     @classmethod
-    def excluir_sessao(cls, id_filme=int):
+    def delete(cls, id_filme=int):
         return cls.delete().where(cls.id_filme == id_filme).execute()
+
+    @classmethod
+    def getIdSessao(self):
+        return self.id_sessao

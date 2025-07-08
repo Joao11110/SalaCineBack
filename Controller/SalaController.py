@@ -2,21 +2,25 @@ from Model.Sala import Sala
 
 class SalaController:
     @staticmethod
-    def cadastrar(numero_sala=int, local=str, classificacao=int):
-        return Sala.cadastrar_sala(numero_sala, local, classificacao)
+    def create(numero_sala=int, local=str):
+        return Sala.create(numero_sala, local)
 
     @staticmethod
-    def editar(id_sala=int, **kwargs):
-        return Sala.editar_sala(id_sala, **kwargs)
+    def read():
+        return Sala.select()
 
     @staticmethod
-    def excluir(id_sala=int):
-        return Sala.excluir_sala(id_sala)
+    def readByNumero(numero_sala=int):
+        return Sala.readByNumero(numero_sala)
 
     @staticmethod
-    def buscar_por_numero(numero_sala=int):
-        return Sala.buscar_por_numero(numero_sala)
-
-    @staticmethod
-    def get_by_id(id_sala=int):
+    def readById(id_sala=int):
         return Sala.get_or_none(Sala.id_sala == id_sala)
+
+    @staticmethod
+    def update(id_sala=int, **kwargs):
+        return Sala.update(id_sala, **kwargs)
+
+    @staticmethod
+    def delete(id_sala=int):
+        return Sala.delete(id_sala)
