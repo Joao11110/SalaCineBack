@@ -5,7 +5,7 @@ from datetime import datetime
 filme_bp = Blueprint('filme', __name__)
 
 @filme_bp.route('/filmes', methods=['POST'])
-def cadastrarFilme():
+def createFilme():
     data = request.get_json()
 
     required_fields = ['titulo', 'duracao', 'classificacao', 'diretor', 'genero']
@@ -37,10 +37,13 @@ def cadastrarFilme():
     }), 201
 
 @filme_bp.route('/filmes', methods=['GET'])
-def buscarFilmes():
-    filmes = FilmeController.read()
+def readFilmes():
+    try:
+        filmes = FilmeController.read()
 
-    if filmes:
+        if not filmes:
+            return jsonify({'error': 'Não há filmes cadastrados.'}), 404
+
         return jsonify([{
             'id_filme': f.id_filme,
             'titulo': f.titulo,
@@ -49,7 +52,29 @@ def buscarFilmes():
             'diretor': f.diretor,
             'genero': f.genero
         } for f in filmes]), 200
-    return jsonify({'message': 'Filme não foi encontrado.'}), 404
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@filme_bp.route('/filmes/<int:id_filme>', methods=['GET'])
+def readFilmesById(id_filme):
+    try:
+        filme = FilmeController.readById(id_filme)
+
+        if not filme:
+            return jsonify({'error': 'Filme não encontrado.'}), 404
+
+        return jsonify({
+            'id_filme': filme.id_filme,
+            'titulo': filme.titulo,
+            'duracao': filme.duracao,
+            'classificacao': filme.classificacao,
+            'diretor': filme.diretor,
+            'genero': filme.genero,
+        })
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 # @filme_bp.route('/filmes/<int:id_filme>', methods=['PUT'])
 # def editar_filme(id_filme):

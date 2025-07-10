@@ -5,7 +5,7 @@ from datetime import datetime
 sala_bp = Blueprint('sala', __name__)
 
 @sala_bp.route('/salas', methods=['POST'])
-def cadastrarSala():
+def createSala():
     data = request.get_json()
 
     required_fields = ['numero_sala', 'local', 'classificacao']
@@ -45,27 +45,63 @@ def cadastrarSala():
         }
     }), 201
 
-@sala_bp.route('/salas/<int:numero_sala>', methods=['GET'])
-def listarSalaPorNumero(numero_sala):
-    sala = SalaController.readByNumero(numero_sala)
-    if sala:
-        return jsonify({
-            'id_sala': sala.get_id_sala(),
-            'numero_sala': sala.numero_sala,
-            'local': sala.local
-        }), 200
-    return jsonify({'message': 'Sala não foi encontrada.'}), 404
-
 @sala_bp.route('/salas', methods=['GET'])
-def listarSalas():
-    sala = SalaController.read()
-    if sala:
+def readSalas():
+    try:
+
+        sala = SalaController.read()
+
+        if not sala:
+            return jsonify({'message': 'Não há salas cadastradas.'}), 404
+
         return jsonify({
             'id_sala': sala.id_sala,
             'numero_sala': sala.numero_sala,
             'local': sala.local
         }), 200
-    return jsonify({'message': 'Não há salas cadastradas.'}), 404
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@sala_bp.route('/salas/<int:id_sala>', methods=['GET'])
+def readSalaById(id_sala):
+    try:
+
+        sala = SalaController.readById(id_sala)
+
+        if not sala:
+            return jsonify({'error': 'Sala não encontrada'}), 404
+
+        return jsonify({
+            'id_sala': sala.id_sala,
+            'numero_sala': sala.numero_sala,
+            'local': sala.local,
+            'classificacao': sala.classificacao,
+            'capacidade': sala.capacidade if hasattr(sala, 'capacidade') else None
+        })
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@sala_bp.route('/salas/<int:numero_sala>', methods=['GET'])
+def readSalaByNumber(numero_sala):
+    try:
+
+        sala = SalaController.readByNumero(numero_sala)
+
+        if not sala:
+            return jsonify({'message': 'Sala não foi encontrada.'}), 404
+
+        return jsonify({
+            'id_sala': sala.get_id_sala(),
+            'numero_sala': sala.numero_sala,
+            'local': sala.local
+        }), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 
 # @sala_bp.route('/salas/<int:id_sala>', methods=['PUT'])
 # def editar_sala(id_sala):
