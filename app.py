@@ -27,7 +27,9 @@ def home():
         "endpoints": {
             "filmes": "/api/filmes",
             "salas": "/api/salas",
-            "sessoes": "/api/sessoes"
+            "sessoes": "/api/sessoes",
+            "generos": "/api/generos",
+            "poster": "/api/filmes/<int:id_filme>/poster"
         },
         "uso": "Use os endpoints acima para interagir com a API."
     })

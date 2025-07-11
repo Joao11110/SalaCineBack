@@ -8,7 +8,7 @@ sala_bp = Blueprint('sala', __name__)
 def createSala():
     data = request.get_json()
 
-    required_fields = ['numero_sala', 'local', 'classificacao']
+    required_fields = ['numero_sala', 'local']
     if not all(field in data for field in required_fields):
         return jsonify({
             'error': 'Campos obrigatórios faltando',
@@ -25,8 +25,8 @@ def createSala():
         sala = SalaController.create(
             numero_sala=data['numero_sala'],
             local=data['local'],
-            classificacao=data['classificacao']
         )
+
     except ValueError as e:
         return jsonify({
             'error': 'Dados inválidos',
@@ -36,12 +36,9 @@ def createSala():
     return jsonify({
         'message': 'Sala cadastrada com sucesso.',
         'sala': {
-            'id_sala': sala.get_id_sala(),
+            'id_sala': sala.id_sala,
             'numero_sala': sala.numero_sala,
             'local': sala.local,
-            'classificacao': sala.classificacao,
-            'data_cadastro': datetime.now().isoformat(),
-            'capacidade': getattr(sala, 'capacidade', None)
         }
     }), 201
 
@@ -76,8 +73,6 @@ def readSalaById(id_sala):
             'id_sala': sala.id_sala,
             'numero_sala': sala.numero_sala,
             'local': sala.local,
-            'classificacao': sala.classificacao,
-            'capacidade': sala.capacidade if hasattr(sala, 'capacidade') else None
         })
 
     except Exception as e:
@@ -100,8 +95,6 @@ def readSalaByNumber(numero_sala):
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
-
 
 # @sala_bp.route('/salas/<int:id_sala>', methods=['PUT'])
 # def editar_sala(id_sala):

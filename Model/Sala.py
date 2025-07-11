@@ -1,4 +1,4 @@
-from peewee import Model, AutoField, IntegerField, CharField
+from peewee import AutoField, IntegerField, CharField
 from Model.BaseModel import BaseModel
 
 class Sala(BaseModel):
@@ -8,7 +8,7 @@ class Sala(BaseModel):
 
     @classmethod
     def create(cls, numero_sala=int, local=str):
-        return cls.create(
+        return super().create(
             numero_sala=numero_sala,
             local=local,
         )

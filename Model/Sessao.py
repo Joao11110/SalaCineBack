@@ -1,4 +1,4 @@
-from peewee import Model, AutoField, DateTimeField, ForeignKeyField
+from peewee import AutoField, DateTimeField, ForeignKeyField
 from datetime import datetime
 from Model.BaseModel import BaseModel
 from Model.Filme import Filme
@@ -11,11 +11,11 @@ class Sessao(BaseModel):
     sala = ForeignKeyField(Sala, backref='sessoes')
 
     @classmethod
-    def create(cls, filme=int, sala=int, data_hora=str):
-        return cls.create(
+    def create(cls, data_hora=str, filme=int, sala=int):
+        return super().create(
+            data_hora=data_hora,
             filme=filme,
-            sala=sala,
-            data_hora=data_hora
+            sala=sala
         )
 
     @classmethod

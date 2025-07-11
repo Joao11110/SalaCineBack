@@ -5,8 +5,15 @@ from Controller.SalaController import SalaController
 
 class SessaoController:
     @staticmethod
-    def create(id_filme=int, id_sala=int, data_hora=str):
-        return Sessao.create(filme, sala, data_hora)
+    def create(data_hora=str, id_filme=int, id_sala=int):
+        try:
+            return Sessao.create(
+                data_hora=data_hora,
+                filme=id_filme,
+                sala=id_sala
+            )
+        except Exception as e:
+            raise ValueError(f"Error creating session: {str(e)}")
 
     @staticmethod
     def read(data=None):

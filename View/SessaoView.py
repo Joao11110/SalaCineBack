@@ -7,35 +7,44 @@ sessao_bp = Blueprint('sessao', __name__)
 @sessao_bp.route('/sessoes', methods=['POST'])
 def createSessao():
     data = request.get_json()
+
     try:
         data_hora = datetime.fromisoformat(data['data_hora'])
     except (ValueError, KeyError):
         return jsonify({'error': 'Formato de data/hora inválido.'}), 400
 
-    sessao = SessaoController.create(
-        id_filme=data['id_filme'],
-        id_sala=data['id_sala'],
-        data_hora=data_hora
-    )
+    required_fields = ['data_hora', 'filme_id', 'sala_id']
+    if not all(field in data for field in required_fields):
+        return jsonify({
+            'error': 'Campos obrigatórios faltando',
+            'required_fields': required_fields,
+            'received_data': data
+        }), 400
 
-    if not sessao:
-        return jsonify({'error': 'Não foi possível agendar a sessão.'}), 400
+    try:
+        sessao = SessaoController.create(
+            data_hora=data_hora,
+            id_filme=data['filme_id'],
+            id_sala=data['sala_id']
+        )
 
-    return jsonify({
-        'message': 'Sessão cadastrada com sucesso.',
-        'sessao': {
-            'id_sessao': sessao.get_id_sessao(),
-            'data_hora': sessao.data_hora.isoformat(),
-            'filme': {
-                'id_filme': sessao.filme.get_id_filme(),
-                'titulo': sessao.filme.titulo
-            },
-            'sala': {
-                'id_sala': sessao.sala.get_id_sala(),
-                'numero_sala': sessao.sala.numero_sala
+        if not sessao:
+            return jsonify({'error': 'Não foi possível agendar a sessão.'}), 400
+
+        return jsonify({
+            'message': 'Sessão cadastrada com sucesso.',
+            'sessao': {
+                'id_sessao': sessao.id_sessao,
+                'data_hora': sessao.data_hora.isoformat(),
+                'filme_id': sessao.filme.id_filme,
+                'sala_id': sessao.sala.id_sala
             }
-        }
-    }), 201
+        }), 201
+
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    except Exception as e:
+        return jsonify({'error': f'Erro interno: {str(e)}'}), 500
 
 @sessao_bp.route('/sessoes', methods=['GET'])
 def readSessoes():

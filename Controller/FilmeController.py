@@ -1,28 +1,69 @@
-from Model.Filme import Filme
+from peewee import DoesNotExist, JOIN
+from Model.Filme import Filme, Genero, FilmeGenero
+from Model.BaseModel import db
 
 class FilmeController:
-    @staticmethod
-    def create(titulo=str, duracao=int, classificacao=int, diretor=str, genero=str):
-        return Filme.create(titulo, duracao, classificacao, diretor, genero)
+    @classmethod
+    def cadastrar(cls, titulo: str, duracao: int, classificacao: int, diretor: str, 
+                 generos_nomes: list, poster_file=None) -> Filme:
+        try:
+            with db.atomic():
+                filme = Filme.create(
+                    titulo=titulo,
+                    duracao=duracao,
+                    classificacao=classificacao,
+                    diretor=diretor,
+                    poster_blob=poster_file.read() if poster_file else None,
+                    poster_mime_type=getattr(poster_file, 'content_type', None) if poster_file else None
+                )
 
-    @staticmethod
-    def read():
-        return Filme.select()
+                if generos_nomes:
+                    for genero_nome in generos_nomes:
+                        genero, _ = Genero.get_or_create(nome=genero_nome.strip())
+                        FilmeGenero.create(filme=filme, genero=genero)
 
-    @staticmethod
-    def readByTitulo(titulo=str):
-        return Filme.readByTitulo(titulo)
+                return filme
+        except Exception as e:
+            db.rollback()
+            raise ValueError(f"Erro ao cadastrar filme: {str(e)}")
 
-    @staticmethod
-    def readById(id_filme=int):
-        return Filme.get_or_none(Filme.id_filme == id_filme)
+    @classmethod
+    def read(cls) -> list[Filme]:
+        """Get all movies with their genres"""
+        query = (Filme
+                .select(Filme, Genero)
+                .join(FilmeGenero, JOIN.LEFT_OUTER)
+                .join(Genero, JOIN.LEFT_OUTER)
+                .order_by(Filme.titulo))
 
-    @staticmethod
-    def update(id_filme=int, **kwargs):
-        return Filme.update(id_filme, **kwargs)
+        result = []
+        for filme in query:
+            filme_data = {
+                'id_filme': filme.id_filme,
+                'titulo': filme.titulo,
+                'duracao': filme.duracao,
+                'classificacao': filme.classificacao,
+                'diretor': filme.diretor,
+                'generos': [g.nome for g in filme.generos()],
+                'poster': filme.poster_blob is not None
+            }
+            result.append(filme_data)
+        
+        return result
 
-    @staticmethod
-    def delete(id_filme=int):
-        return Filme.delete(id_filme)
-
-
+    @classmethod
+    def readById(cls, id_filme: int) -> dict:
+        """Get movie by ID with genres"""
+        try:
+            filme = Filme.get(Filme.id_filme == id_filme)
+            return {
+                'id_filme': filme.id_filme,
+                'titulo': filme.titulo,
+                'duracao': filme.duracao,
+                'classificacao': filme.classificacao,
+                'diretor': filme.diretor,
+                'generos': [g.nome for g in filme.generos()],
+                'poster': filme.poster_blob is not None
+            }
+        except DoesNotExist:
+            return None
