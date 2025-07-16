@@ -46,16 +46,16 @@ def createSala():
 def readSalas():
     try:
 
-        sala = SalaController.read()
+        sala = list(SalaController.read())
 
         if not sala:
             return jsonify({'message': 'Não há salas cadastradas.'}), 404
 
-        return jsonify({
+        return jsonify([{
             'id_sala': sala.id_sala,
             'numero_sala': sala.numero_sala,
             'local': sala.local
-        }), 200
+        } for sala in sala]), 200
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500

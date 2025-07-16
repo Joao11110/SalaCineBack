@@ -51,20 +51,20 @@ def readSessoes():
     try:
         data_str = request.args.get('data')
         data = datetime.fromisoformat(data_str) if data_str else None
-        sessoes = SessaoController.readByData(data)
+        sessoes = list(SessaoController.readByData(data))
 
         if not sessoes:
             return jsonify({'message': 'Não há sessões cadastradas.'}), 404
 
         return jsonify([{
-            'id_sessao': s.get_id_sessao(),
-            'data_hora': s.data_hora.isoformat(),
+            'id_sessao': s.id_sessao,
+            'data_hora': s.data_hora,
             'filme': {
-                'id_filme': s.filme.get_id_filme(),
+                'id_filme': s.filme.id_filme,
                 'titulo': s.filme.titulo
             },
             'sala': {
-                'id_sala': s.sala.get_id_sala(),
+                'id_sala': s.sala.id_sala,
                 'numero_sala': s.sala.numero_sala
             }
         } for s in sessoes]), 200
