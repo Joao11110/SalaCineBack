@@ -44,7 +44,7 @@ def createSessao():
     except ValueError as e:
         return jsonify({'error': str(e)}), 400
     except Exception as e:
-        return jsonify({'error': f'Erro interno: {str(e)}'}), 500
+        return jsonify({'error': str(e)}), 500
 
 @sessao_bp.route('/sessoes', methods=['GET'])
 def readSessoes():
@@ -54,7 +54,7 @@ def readSessoes():
         sessoes = list(SessaoController.readByData(data))
 
         if not sessoes:
-            return jsonify({'message': 'Não há sessões cadastradas.'}), 404
+            return jsonify({"error": "Não há sessões cadastradas"}), 404
 
         return jsonify([{
             'id_sessao': s.id_sessao,
@@ -75,11 +75,10 @@ def readSessoes():
 @sessao_bp.route('/sessoes/<int:id_sessao>', methods=['GET'])
 def readSessaoById(id_sessao):
     try:
-
         sessao = SessaoController.readById(id_sessao)
 
         if not sessao:
-            return jsonify({'error': 'Sessão não encontrada'}), 404
+            return jsonify({"error": "Sessão não foi encontrada"}), 404
 
         return jsonify({
             'id_sessao': sessao.id_sessao,
@@ -93,6 +92,28 @@ def readSessaoById(id_sessao):
                 'numero_sala': sessao.sala.numero_sala
             }
         })
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@sessao_bp.route('/sessoes/<int:id_sessoes>', methods=['PUT'])
+def updateSessao(id_sessao):
+    try:
+        data = request.get_json()
+        sessao = SessaoController.update(id_sala, **data)
+        return jsonify({'updated': updated}), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 200
+
+@sessao_bp.route('/sessoes/<int:id_sessao>', methods=['DELETE'])
+def deleteSessao(id_sessao):
+    try:
+        sessao = SessaoController.readById(id_sessao)
+        if not sessao:
+            return jsonify({"error": "Sessão não foi encontrada, portanto não foi deletada"}), 404
+        SalaController.delete(id_sessao)
+        return jsonify({"deleted": "Sessão foi deletada com sucesso"}), 200
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500

@@ -23,9 +23,9 @@ class Sala(BaseModel):
 
     @classmethod
     def update(cls, id_sala=int, **kwargs):
-        query = cls.update(**kwargs).where(cls.id_sala == id_sala)
+        query = super().update(**kwargs).where(cls.id_sala == id_sala)
         return query.execute()
 
     @classmethod
     def delete(cls, id_sala=int):
-        return cls.delete().where(cls.id_sala == id_sala).execute()
+        return super().delete().where(cls.id_sala == id_sala).execute()

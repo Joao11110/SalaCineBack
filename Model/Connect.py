@@ -3,7 +3,7 @@ from Model.Sala import Sala
 from Model.Sessao import Sessao
 from Model.BaseModel import db
 
-def initialize_db():
+def initializeDB():
     try:
         db.connect()
         db.create_tables([Filme, Sala, Sessao, Genero, FilmeGenero], safe=True)

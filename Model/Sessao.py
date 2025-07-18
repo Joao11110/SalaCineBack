@@ -26,7 +26,7 @@ class Sessao(BaseModel):
         return query.order_by(cls.data_hora)
 
     @classmethod
-    def readBySalaAndDate(cls, sala, data_hora):
+    def readBySalaAndDate(cls, sala, data_hora=str):
         return cls.select().where(
             (cls.sala == sala) &
             (cls.data_hora == data_hora)
@@ -34,12 +34,12 @@ class Sessao(BaseModel):
 
     @classmethod
     def update(cls, id_filme=int, **kwargs):
-        query = cls.update(**kwargs).where(cls.id_filme == id_filme)
+        query = super().update(**kwargs).where(cls.id_filme == id_filme)
         return query.execute()
 
     @classmethod
     def delete(cls, id_filme=int):
-        return cls.delete().where(cls.id_filme == id_filme).execute()
+        return super().delete().where(cls.id_filme == id_filme).execute()
 
     @classmethod
     def getIdSessao(self):

@@ -28,42 +28,49 @@ class FilmeController:
             raise ValueError(f"Erro ao cadastrar filme: {str(e)}")
 
     @classmethod
-    def read(cls) -> list[Filme]:
-        """Get all movies with their genres"""
-        query = (Filme
-                .select(Filme, Genero)
-                .join(FilmeGenero, JOIN.LEFT_OUTER)
-                .join(Genero, JOIN.LEFT_OUTER)
-                .order_by(Filme.titulo))
-
-        result = []
-        for filme in query:
-            filme_data = {
-                'id_filme': filme.id_filme,
-                'titulo': filme.titulo,
-                'duracao': filme.duracao,
-                'classificacao': filme.classificacao,
-                'diretor': filme.diretor,
-                'generos': [g.nome for g in filme.generos()],
-                'poster': filme.poster_blob is not None
-            }
-            result.append(filme_data)
-        
-        return result
+    def read(cls) -> list[dict]:
+        """Get all movies with their genres (without duplicates)"""
+        filmes = Filme.select().order_by(Filme.titulo)
+        return [cls._formatFilmeOutput(filme) for filme in filmes]
 
     @classmethod
     def readById(cls, id_filme: int) -> dict:
         """Get movie by ID with genres"""
         try:
             filme = Filme.get(Filme.id_filme == id_filme)
-            return {
-                'id_filme': filme.id_filme,
-                'titulo': filme.titulo,
-                'duracao': filme.duracao,
-                'classificacao': filme.classificacao,
-                'diretor': filme.diretor,
-                'generos': [g.nome for g in filme.generos()],
-                'poster': filme.poster_blob is not None
-            }
+            return cls._formatFilmeOutput(filme)
         except DoesNotExist:
             return None
+
+    @staticmethod
+    def update(id_filme, **kwargs):
+        try:
+            return Filme.update(id_filme, **kwargs)
+
+        except DoesNotExist as e:
+            raise ValueError(str(e))
+        except Exception as e:
+            raise ValueError(f"Error updating movie: {str(e)}")
+        except DoesNotExist:
+            db.rollback()
+            raise ValueError("Filme não encontrado")
+        except Exception as e:
+            db.rollback()
+            raise ValueError(f"Error updating movie: {str(e)}")
+
+    @staticmethod
+    def delete(id_filme=int):
+        return Filme.delete(id_filme)
+
+    @classmethod
+    def _formatFilmeOutput(cls, filme) -> dict:
+        return {
+            'id_filme': filme.id_filme,
+            'titulo': filme.titulo,
+            'duracao': filme.duracao,
+            'classificacao': filme.classificacao,
+            'diretor': filme.diretor,
+            'generos': [g.nome for g in filme.generos()],
+            'poster': filme.poster_blob is not None,
+            'poster_url': f"/api/filmes/{filme.id_filme}/poster" if filme.poster_blob else None
+        }

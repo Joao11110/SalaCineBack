@@ -40,17 +40,8 @@ def createFilme():
 
         return jsonify({
             'message': 'Filme cadastrado com sucesso',
-            'filme': {
-                'id_filme': filme.id_filme,
-                'titulo': filme.titulo,
-                'duracao': filme.duracao,
-                'classificacao': filme.classificacao,
-                'diretor': filme.diretor,
-                'generos': [g.nome for g in filme.generos()],
-                'poster_url': f'/api/filmes/{filme.id_filme}/poster' if filme.poster_blob else None,
-                'data_cadastro': filme.data_cadastro.isoformat() if hasattr(filme, 'data_cadastro') else None
-            }
-        }), 201
+            'filme': FilmeController._formatFilmeOutput(filme)
+            }), 201
 
     except ValueError as e:
         return jsonify({'error': 'Dados inválidos', 'details': str(e)}), 400
@@ -61,23 +52,19 @@ def createFilme():
 def readFilmes():
     try:
         filmes = FilmeController.read()
-
         if not filmes:
-            return jsonify({'error': 'Não há filmes cadastrados'}), 404
-
+            return jsonify({"error": "Não há filmes cadastrados"}), 404
         return jsonify(filmes), 200
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 @filme_bp.route('/filmes/<int:id_filme>', methods=['GET'])
-def readFilmesById(id_filme):
+def readFilmeById(id_filme):
     try:
         filme = FilmeController.readById(id_filme)
-
         if not filme:
-            return jsonify({'error': 'Filme não encontrado'}), 404
-
+            return jsonify({"error": "Filme não foi encontrado"}), 404
         return jsonify(filme), 200
 
     except Exception as e:
@@ -91,22 +78,20 @@ def readPoster(id_filme):
         if not filme or not filme.get('poster'):
             return jsonify({'error': 'Pôster não foi encontrado'}), 404
 
-        # Get the actual model instance for the poster data
-        filme_instance = Filme.get(Filme.id_filme == id_filme)
+        filmeInstance = Filme.get(Filme.id_filme == id_filme)
         return send_file(
-            BytesIO(filme_instance.poster_blob),
-            mimetype=filme_instance.poster_mime_type
+            BytesIO(filmeInstance.poster_blob),
+            mimetype=filmeInstance.poster_mime_type
         )
 
     except DoesNotExist:
-        return jsonify({'error': 'Filme não encontrado'}), 404
+        return jsonify({'error': 'Poster do filme não foi encontrado'}), 404
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 @filme_bp.route('/generos', methods=['GET'])
 def readGeneros():
     try:
-
         generos = Genero.select()
 
         if not generos:
@@ -117,13 +102,37 @@ def readGeneros():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-# @filme_bp.route('/filmes/<int:id_filme>', methods=['PUT'])
-# def editar_filme(id_filme):
-#     data = request.get_json()
-#     updated = FilmeController.editar(id_filme, **data)
-#     return jsonify({'updated': updated}), 200
+@filme_bp.route('/filmes/<int:id_filme>', methods=['PUT'])
+def updateFilme(id_filme):
+    data = request.get_json()
 
-# @filme_bp.route('/filmes/<int:id_filme>', methods=['DELETE'])
-# def excluir_filme(id_filme):
-#     deleted = FilmeController.excluir(id_filme)
-#     return jsonify({'deleted': deleted}), 200
+    try:
+        if 'generos' in data and isinstance(data['generos'], str):
+            data['generos'] = [g.strip() for g in data['generos'].split(',')]
+        
+        filme = FilmeController.update(
+            id_filme=id_filme,
+            **data
+        )
+
+        return jsonify({
+            'message': 'Filme atualizado com sucesso',
+            'filme': FilmeController._formatFilmeOutput(filme)
+        }), 200
+
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    except Exception as e:
+        return jsonify({'error': f'Erro interno: {str(e)}'}), 500
+
+@filme_bp.route('/filmes/<int:id_filme>', methods=['DELETE'])
+def excluirFilme(id_filme):
+    try:
+        filme = FilmeController.readById(id_filme)
+        if not filme:
+            return jsonify({"error": "Filme não foi encontrado, portando não foi deletado"}), 404
+        FilmeController.delete(id_filme)
+        return jsonify({"deleted": "Filme foi deletado com sucesso"}), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500

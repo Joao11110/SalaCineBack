@@ -35,27 +35,16 @@ def createSala():
 
     return jsonify({
         'message': 'Sala cadastrada com sucesso.',
-        'sala': {
-            'id_sala': sala.id_sala,
-            'numero_sala': sala.numero_sala,
-            'local': sala.local,
-        }
+        'sala': SalaController._formatSalaOutput(sala)
     }), 201
 
 @sala_bp.route('/salas', methods=['GET'])
 def readSalas():
     try:
-
-        sala = list(SalaController.read())
-
-        if not sala:
-            return jsonify({'message': 'Não há salas cadastradas.'}), 404
-
-        return jsonify([{
-            'id_sala': sala.id_sala,
-            'numero_sala': sala.numero_sala,
-            'local': sala.local
-        } for sala in sala]), 200
+        salas = SalaController.read()
+        if not salas:
+            return jsonify({"error": "Não há salas cadastradas"}), 404
+        return jsonify(salas), 200
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -63,17 +52,10 @@ def readSalas():
 @sala_bp.route('/salas/<int:id_sala>', methods=['GET'])
 def readSalaById(id_sala):
     try:
-
         sala = SalaController.readById(id_sala)
-
         if not sala:
-            return jsonify({'error': 'Sala não encontrada'}), 404
-
-        return jsonify({
-            'id_sala': sala.id_sala,
-            'numero_sala': sala.numero_sala,
-            'local': sala.local,
-        })
+            return jsonify({"error": "Sala não foi encontrada"}), 404
+        return jsonify(sala), 200
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -81,28 +63,32 @@ def readSalaById(id_sala):
 @sala_bp.route('/salas/<int:numero_sala>', methods=['GET'])
 def readSalaByNumber(numero_sala):
     try:
-
         sala = SalaController.readByNumero(numero_sala)
-
         if not sala:
-            return jsonify({'message': 'Sala não foi encontrada.'}), 404
-
-        return jsonify({
-            'id_sala': sala.get_id_sala(),
-            'numero_sala': sala.numero_sala,
-            'local': sala.local
-        }), 200
+            return jsonify({"error": "Sala não foi encontrada"}), 404
+        return jsonify(sala), 200
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-# @sala_bp.route('/salas/<int:id_sala>', methods=['PUT'])
-# def editar_sala(id_sala):
-#     data = request.get_json()
-#     updated = SalaController.editar(id_sala, **data)
-#     return jsonify({'updated': updated}), 200
+@sala_bp.route('/salas/<int:id_sala>', methods=['PUT'])
+def updateSala(id_sala):
+    try:
+        data = request.get_json()
+        updated = SalaController.update(id_sala, **data)
+        return jsonify({'updated': updated}), 200
 
-# @sala_bp.route('/salas/<int:id_sala>', methods=['DELETE'])
-# def excluir_sala(id_sala):
-#     deleted = SalaController.excluir(id_sala)
-#     return jsonify({'deleted': deleted}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@sala_bp.route('/salas/<int:id_sala>', methods=['DELETE'])
+def deleteSala(id_sala):
+    try:
+        sala = SalaController.readById(id_sala)
+        if not sala:
+            return jsonify({"error": "Sala não foi encontrada, portanto não foi deletada"}), 404
+        SalaController.delete(id_sala)
+        return jsonify({"deleted": "Sala foi deletada com sucesso"}), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500

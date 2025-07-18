@@ -7,15 +7,18 @@ class SalaController:
 
     @staticmethod
     def read():
-        return Sala.select()
+        salas = Sala.select().order_by(Sala.id_sala)
+        return [cls._formatSalaOutput(salas) for sala in salas]
 
     @staticmethod
     def readByNumero(numero_sala=int):
-        return Sala.readByNumero(numero_sala)
+        sala =  Sala.readByNumero(numero_sala)
+        return cls._formatSalaOutput(sala)
 
     @staticmethod
     def readById(id_sala=int):
-        return Sala.get_or_none(Sala.id_sala == id_sala)
+        sala = Sala.get_or_none(Sala.id_sala == id_sala)
+        return cls._formatSalaOutput(sala)
 
     @staticmethod
     def update(id_sala=int, **kwargs):
@@ -24,3 +27,11 @@ class SalaController:
     @staticmethod
     def delete(id_sala=int):
         return Sala.delete(id_sala)
+
+    @staticmethod
+    def _formatSalaOutput(cls, sala) -> dict:
+        return {
+            'id_sala': sala.id_sala,
+            'numero_sala': sala.numero_sala,
+            'local': sala.local,
+        }

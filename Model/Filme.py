@@ -26,12 +26,11 @@ class Filme(BaseModel):
     def generos(self):
         return (Genero
                 .select()
-                .join(FilmeGenero, on=(Genero.id_genero == FilmeGenero.genero_id))
-                .where(FilmeGenero.filme_id == self.id_filme))
+                .join(FilmeGenero, on=(Genero.id_genero == FilmeGenero.genero))
+                .where(FilmeGenero.filme == self.id_filme))
 
     @classmethod
     def create(cls, titulo, duracao, classificacao, diretor, generos=None, poster_blob=None, poster_mime_type=None):
-        # Primeiro cria o filme
         filme = super().create(
             titulo=titulo,
             duracao=duracao,
@@ -40,16 +39,15 @@ class Filme(BaseModel):
             poster_blob=poster_blob,
             poster_mime_type=poster_mime_type
         )
-        
-        # Depois adiciona os gêneros se foram fornecidos
+
         if generos:
             if isinstance(generos, str):
                 generos = [generos]
-            
+
             for genero_nome in generos:
                 genero, _ = Genero.get_or_create(nome=genero_nome)
                 FilmeGenero.create(filme=filme, genero=genero)
-        
+
         return filme
 
     @classmethod
@@ -58,15 +56,32 @@ class Filme(BaseModel):
 
     @classmethod
     def update(cls, id_filme, **kwargs):
-        query = cls.update(**kwargs).where(cls.id_filme == id_filme)
-        return query.execute()
+        with cls._meta.database.atomic():
+            generos = kwargs.pop('generos', None)
+
+            if kwargs:
+                query = super().update(**kwargs).where(cls.id_filme == id_filme)
+                updated = query.execute()
+                if updated == 0:
+                    raise DoesNotExist("Filme não encontrado")
+
+            filme = cls.get(cls.id_filme == id_filme)
+
+            if generos is not None:
+
+                FilmeGenero.delete().where(FilmeGenero.filme == filme).execute()
+
+                for genero_nome in generos:
+                    genero, _ = Genero.get_or_create(nome=genero_nome.strip())
+                    FilmeGenero.create(filme=filme, genero=genero)
+
+            filme = cls.get(cls.id_filme == id_filme)
+            return filme
 
     @classmethod
     def delete(cls, id_filme):
-        # Primeiro deleta as relações com gêneros
         FilmeGenero.delete().where(FilmeGenero.filme == id_filme).execute()
-        # Depois deleta o filme
-        return cls.delete().where(cls.id_filme == id_filme).execute()
+        return super().delete().where(cls.id_filme == id_filme).execute()
 
     def getPosterUrl(self):
         if self.poster_blob:

@@ -2,7 +2,7 @@ from flask import Flask, jsonify
 from flask_cors import CORS
 from flask.json.provider import DefaultJSONProvider
 
-from Model.Connect import initialize_db
+from Model.Connect import initializeDB
 from View.FilmeView import filme_bp
 from View.SalaView import sala_bp
 from View.SessaoView import sessao_bp
@@ -25,16 +25,16 @@ def home():
     return jsonify({
         "message": "A API do SalaCine esta funcionando!",
         "endpoints": {
-            "filmes": "/api/filmes",
-            "salas": "/api/salas",
+            "filmes ": "/api/filmes",
             "sessoes": "/api/sessoes",
+            "salas  ": "/api/salas",
             "generos": "/api/generos",
-            "poster": "/api/filmes/<int:id_filme>/poster"
+            "poster ": "/api/filmes/<int:id_filme>/poster"
         },
-        "uso": "Use os endpoints acima para interagir com a API."
+        "usage": "Use os endpoints acima para interagir com a API."
     })
 
-initialize_db()
+initializeDB()
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
