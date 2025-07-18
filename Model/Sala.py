@@ -1,5 +1,6 @@
 from peewee import AutoField, IntegerField, CharField
 from Model.BaseModel import BaseModel
+from peewee import DoesNotExist
 
 class Sala(BaseModel):
     id_sala = AutoField(primary_key=True)
@@ -22,10 +23,22 @@ class Sala(BaseModel):
         return self.id_sala
 
     @classmethod
-    def update(cls, id_sala=int, **kwargs):
-        query = super().update(**kwargs).where(cls.id_sala == id_sala)
-        return query.execute()
+    def update(cls, id_sala, **kwargs):
+        with cls._meta.database.atomic():
+            query = super().update(**kwargs).where(cls.id_sala == id_sala)
+            updated = query.execute()
+            
+            if updated == 0:
+                raise DoesNotExist("Sala não encontrada")
+
+            return cls.get(cls.id_sala == id_sala)
 
     @classmethod
-    def delete(cls, id_sala=int):
-        return super().delete().where(cls.id_sala == id_sala).execute()
+    def delete(cls, id_sala):
+        with super()._meta.database.atomic():
+            sala = cls.get_or_none(cls.id_sala == id_sala)
+            if not sala:
+                raise DoesNotExist("Sala não encontrada")
+
+            query = super().delete().where(cls.id_sala == id_sala)
+            return query.execute()

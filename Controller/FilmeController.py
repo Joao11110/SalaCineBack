@@ -29,13 +29,11 @@ class FilmeController:
 
     @classmethod
     def read(cls) -> list[dict]:
-        """Get all movies with their genres (without duplicates)"""
         filmes = Filme.select().order_by(Filme.titulo)
         return [cls._formatFilmeOutput(filme) for filme in filmes]
 
     @classmethod
     def readById(cls, id_filme: int) -> dict:
-        """Get movie by ID with genres"""
         try:
             filme = Filme.get(Filme.id_filme == id_filme)
             return cls._formatFilmeOutput(filme)

@@ -50,7 +50,7 @@ def readSalas():
         return jsonify({'error': str(e)}), 500
 
 @sala_bp.route('/salas/<int:id_sala>', methods=['GET'])
-def readSalaById(id_sala):
+def readSalaById(id_sala=int):
     try:
         sala = SalaController.readById(id_sala)
         if not sala:
@@ -61,34 +61,51 @@ def readSalaById(id_sala):
         return jsonify({'error': str(e)}), 500
 
 @sala_bp.route('/salas/<int:numero_sala>', methods=['GET'])
-def readSalaByNumber(numero_sala):
+def readSalaByNumber(numero_sala=int):
     try:
         sala = SalaController.readByNumero(numero_sala)
         if not sala:
             return jsonify({"error": "Sala não foi encontrada"}), 404
-        return jsonify(sala), 200
+        return jsonify({
+            'message': 'Sala recuperada com sucesso',
+            'data': SessaoController._formatSessaoOutput(sessao)
+        }), 200
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 @sala_bp.route('/salas/<int:id_sala>', methods=['PUT'])
-def updateSala(id_sala):
-    try:
-        data = request.get_json()
-        updated = SalaController.update(id_sala, **data)
-        return jsonify({'updated': updated}), 200
+def updateSala(id_sala=int):
+    data = request.get_json()
 
+    try:
+        if 'numero_sala' in data:
+            try:
+                data['numero_sala'] = int(data['numero_sala'])
+            except (ValueError, TypeError):
+                return jsonify({
+                    'error': 'numero_sala deve ser um número inteiro'
+                }), 400
+
+        updated_sala = SalaController.update(id_sala, **data)
+        return jsonify({
+            'message': 'Sala atualizada com sucesso',
+            'sala': updated_sala
+        }), 200
+
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': f'Erro interno: {str(e)}'}), 500
 
 @sala_bp.route('/salas/<int:id_sala>', methods=['DELETE'])
 def deleteSala(id_sala):
     try:
-        sala = SalaController.readById(id_sala)
-        if not sala:
-            return jsonify({"error": "Sala não foi encontrada, portanto não foi deletada"}), 404
-        SalaController.delete(id_sala)
-        return jsonify({"deleted": "Sala foi deletada com sucesso"}), 200
-
+        deleted = SalaController.delete(id_sala)
+        if not deleted:
+            return jsonify({"error": "Sala não encontrada, portanto não foi deletada"}), 404
+        return jsonify({"message": "Sala deletada com sucesso"}), 200
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 404
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': f'Erro interno: {str(e)}'}), 500

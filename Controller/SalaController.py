@@ -1,4 +1,5 @@
 from Model.Sala import Sala
+from peewee import DoesNotExist
 
 class SalaController:
     @staticmethod
@@ -7,29 +8,54 @@ class SalaController:
 
     @staticmethod
     def read():
-        salas = Sala.select().order_by(Sala.id_sala)
-        return [cls._formatSalaOutput(salas) for sala in salas]
+        salas = Sala.select().order_by(Sala.numero_sala)
+        return [SalaController._formatSalaOutput(salas) for sala in salas]
 
     @staticmethod
-    def readByNumero(numero_sala=int):
-        sala =  Sala.readByNumero(numero_sala)
-        return cls._formatSalaOutput(sala)
-
-    @staticmethod
-    def readById(id_sala=int):
+    def readById(id_sala):
         sala = Sala.get_or_none(Sala.id_sala == id_sala)
-        return cls._formatSalaOutput(sala)
+        if sala:
+            return SalaController._formatSalaOutput(sala)
+        return None
 
     @staticmethod
-    def update(id_sala=int, **kwargs):
-        return Sala.update(id_sala, **kwargs)
+    def readByNumero(numero_sala):
+        sala = Sala.get_or_none(Sala.numero_sala == numero_sala)
+        if sala:
+            return SalaController._formatSalaOutput(sala)
+        return None
 
     @staticmethod
-    def delete(id_sala=int):
-        return Sala.delete(id_sala)
+    def read():
+        salas = Sala.select().order_by(Sala.numero_sala)
+        return [SalaController._formatSalaOutput(sala) for sala in salas]
 
     @staticmethod
-    def _formatSalaOutput(cls, sala) -> dict:
+    def update(id_sala, **kwargs):
+        try:
+            if 'numero_sala' in kwargs and not isinstance(kwargs['numero_sala'], int):
+                raise ValueError("numero_sala deve ser um inteiro")
+
+            updated_sala = Sala.update(id_sala, **kwargs)
+            return SalaController._formatSalaOutput(updated_sala)
+
+        except DoesNotExist as e:
+            raise ValueError(str(e))
+        except Exception as e:
+            raise ValueError(f"Error updating sala: {str(e)}")
+
+    @staticmethod
+    def delete(id_sala):
+        try:
+            deleted_count = Sala.delete(id_sala)
+            return deleted_count > 0
+        except DoesNotExist as e:
+            raise ValueError(str(e))
+        except Exception as e:
+            raise ValueError(f"Error deleting sala: {str(e)}")
+
+    @staticmethod
+    def _formatSalaOutput(sala) -> dict:
         return {
             'id_sala': sala.id_sala,
             'numero_sala': sala.numero_sala,
