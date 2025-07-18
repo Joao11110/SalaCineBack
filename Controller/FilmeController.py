@@ -28,7 +28,7 @@ class FilmeController:
             raise ValueError(f"Erro ao cadastrar filme: {str(e)}")
 
     @classmethod
-    def read(cls) -> list[Filme]:
+    def read(cls) -> list[dict]:
         """Get all movies with their genres"""
         query = (Filme
                 .select(Filme, Genero)
@@ -36,20 +36,24 @@ class FilmeController:
                 .join(Genero, JOIN.LEFT_OUTER)
                 .order_by(Filme.titulo))
 
-        result = []
+        filmes_dict = {}
         for filme in query:
-            filme_data = {
-                'id_filme': filme.id_filme,
-                'titulo': filme.titulo,
-                'duracao': filme.duracao,
-                'classificacao': filme.classificacao,
-                'diretor': filme.diretor,
-                'generos': [g.nome for g in filme.generos()],
-                'poster': filme.poster_blob is not None
-            }
-            result.append(filme_data)
+            if filme.id_filme not in filmes_dict:
+                filmes_dict[filme.id_filme] = {
+                    'id_filme': filme.id_filme,
+                    'titulo': filme.titulo,
+                    'duracao': filme.duracao,
+                    'classificacao': filme.classificacao,
+                    'diretor': filme.diretor,
+                    'generos': [], # Começa com lista vazia de gêneros
+                    'poster': filme.poster_blob is not None
+                }
+
+                if hasattr(filme, 'genero') and filme.genero:
+                    if filme.genero.nome not in filmes_dict[filme.id_filme]['generos']:
+                        filmes_dict[filme.id_filme]['generos'].append(filme.genero.nome)
         
-        return result
+        return list(filmes_dict.values())
 
     @classmethod
     def readById(cls, id_filme: int) -> dict:
