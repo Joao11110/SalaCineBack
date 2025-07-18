@@ -1,8 +1,8 @@
-from flask import Blueprint, request, jsonify
 from Controller.FilmeController import FilmeController, Genero
+from flask import Blueprint, request, jsonify
 from peewee import DoesNotExist
-from io import BytesIO
 from flask import send_file
+from io import BytesIO
 
 filme_bp = Blueprint('filme', __name__)
 
@@ -39,9 +39,9 @@ def createFilme():
         )
 
         return jsonify({
-            'message': 'Filme cadastrado com sucesso',
+            'message': 'Filme foi cadastrado com sucesso',
             'filme': FilmeController._formatFilmeOutput(filme)
-            }), 201
+            }), 200
 
     except ValueError as e:
         return jsonify({'error': 'Dados inválidos', 'details': str(e)}), 400
@@ -134,5 +134,10 @@ def excluirFilme(id_filme):
         FilmeController.delete(id_filme)
         return jsonify({"deleted": "Filme foi deletado com sucesso"}), 200
 
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 404
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({
+            "error": "Erro ao deletar filme",
+            "details": str(e)
+        }), 500

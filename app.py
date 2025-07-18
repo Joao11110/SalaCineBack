@@ -1,11 +1,11 @@
+from flask.json.provider import DefaultJSONProvider
 from flask import Flask, jsonify
 from flask_cors import CORS
-from flask.json.provider import DefaultJSONProvider
 
 from Model.Connect import initializeDB
+from View.SessaoView import sessao_bp
 from View.FilmeView import filme_bp
 from View.SalaView import sala_bp
-from View.SessaoView import sessao_bp
 
 class CustomJSONProvider(DefaultJSONProvider):
     def __init__(self, app):
@@ -16,9 +16,10 @@ app = Flask(__name__)
 app.json = CustomJSONProvider(app)
 CORS(app)
 
-app.register_blueprint(filme_bp, url_prefix='/api')
-app.register_blueprint(sala_bp, url_prefix='/api')
+app.register_blueprint(filme_bp,  url_prefix='/api')
+app.register_blueprint(sala_bp,   url_prefix='/api')
 app.register_blueprint(sessao_bp, url_prefix='/api')
+initializeDB()
 
 @app.route('/')
 def home():
@@ -33,8 +34,6 @@ def home():
         },
         "usage": "Use os endpoints acima para interagir com a API."
     })
-
-initializeDB()
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

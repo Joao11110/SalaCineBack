@@ -1,6 +1,6 @@
 from peewee import AutoField, DateTimeField, ForeignKeyField
-from datetime import datetime
 from Model.BaseModel import BaseModel
+from datetime import datetime
 from Model.Filme import Filme
 from Model.Sala import Sala
 
@@ -33,13 +33,26 @@ class Sessao(BaseModel):
         ).exists()
 
     @classmethod
-    def update(cls, id_filme=int, **kwargs):
-        query = super().update(**kwargs).where(cls.id_filme == id_filme)
-        return query.execute()
+    def update(cls, id_sessao=int, **kwargs):
+        with super()._meta.database.atomic():
+            sessao = cls.get_or_none(cls.id_sessao == id_sessao)
+            if not sessao:
+                raise DoesNotExist("Sessão não foi encontrada")
+
+            query = super().update(**kwargs).where(cls.id_sessao == id_sessao)
+            updated = query.execute()
+
+            return cls.get(cls.id_sessao == id_sessao)
 
     @classmethod
-    def delete(cls, id_filme=int):
-        return super().delete().where(cls.id_filme == id_filme).execute()
+    def delete(cls, id_sessao):
+        with super()._meta.database.atomic():
+            sessao = cls.get_or_none(cls.id_sessao == id_sessao)
+            if not sessao:
+                raise DoesNotExist("Sessão não foi encontrada")
+
+            query = super().delete().where(cls.id_sessao == id_sessao)
+            return query.execute()
 
     @classmethod
     def getIdSessao(self):

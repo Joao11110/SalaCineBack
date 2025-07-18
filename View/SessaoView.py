@@ -1,6 +1,6 @@
+from Controller.SessaoController import SessaoController
 from flask import Blueprint, request, jsonify
 from datetime import datetime
-from Controller.SessaoController import SessaoController
 
 sessao_bp = Blueprint('sessao', __name__)
 @sessao_bp.route('/sessoes', methods=['POST'])
@@ -10,14 +10,14 @@ def createSessao():
     required_fields = ['data_hora', 'filme_id', 'sala_id']
     if not all(field in data for field in required_fields):
         return jsonify({
-            'error': 'Missing required fields',
+            'error': 'Parâmetros insuficientes',
             'required': required_fields
         }), 400
 
     try:
         data_hora = datetime.fromisoformat(data['data_hora'])
     except ValueError:
-        return jsonify({'error': 'Invalid date format'}), 400
+        return jsonify({'error': 'Formato de data e hora incorretos'}), 400
 
     try:
         sessao = SessaoController.create(
@@ -26,18 +26,14 @@ def createSessao():
             sala_id=data['sala_id']
         )
         return jsonify({
-            'message': 'Session created successfully',
-            'session': {
-                'id': sessao.id_sessao,
-                'datetime': sessao.data_hora.isoformat(),
-                'filme_id': sessao.filme.id_filme,
-                'sala_id': sessao.sala.id_sala
-            }
-        }), 201
+            'message': 'Sessão foi criada com sucesso',
+            'sessão': SessaoController._formatSessaoOutput(sessao)
+        }), 200
+
     except ValueError as e:
         return jsonify({'error': str(e)}), 400
     except Exception as e:
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': str(e)}), 500
 
 @sessao_bp.route('/sessoes', methods=['GET'])
 def readSessoes():
@@ -45,18 +41,13 @@ def readSessoes():
         sessoes = list(SessaoController.read())
 
         if not sessoes:
-            return jsonify({
-                'message': 'Nenhuma sessão encontrada',
-                'data': [],
-                'count': 0
-            }), 200
+            return jsonify({'message': 'Não há sessoes cadastradas'}), 200
 
-        formatted_sessoes = [SessaoController._formatSessaoOutput(s) for s in sessoes]
-        
+        sessoes = [SessaoController._formatSessaoOutput(s) for s in sessoes]
+
         return jsonify({
             'message': 'Sessões recuperadas com sucesso',
-            'data': formatted_sessoes,
-            'count': len(formatted_sessoes)
+            'data': sessoes,
         }), 200
 
     except ValueError as e:
@@ -65,25 +56,23 @@ def readSessoes():
             'data': None
         }), 400
     except Exception as e:
-        print(f"Error: {str(e)}")
         return jsonify({
             'error': 'Erro interno ao buscar sessões',
-            'data': None
         }), 500
 
 @sessao_bp.route('/sessoes/<int:id_sessao>', methods=['GET'])
-def readSessaoById(id_sessao):
+def readSessaoById(id_sessao=int):
     try:
         sessao = SessaoController.readById(id_sessao)
         if not sessao:
             return jsonify({
-                'error': 'Sessão não encontrada',
+                'error': 'Sessão não foi encontrada',
                 'data': None
             }), 404
-            
+
         return jsonify({
             'message': 'Sessão recuperada com sucesso',
-            'data': SessaoController._formatSessaoOutput(sessao)
+            'data': sessao,
         }), 200
 
     except ValueError as e:
@@ -92,30 +81,48 @@ def readSessaoById(id_sessao):
             'data': None
         }), 400
     except Exception as e:
-        print(f"Error: {str(e)}")
         return jsonify({
             'error': 'Erro interno ao buscar sessão',
             'data': None
         }), 500
 
-@sessao_bp.route('/sessoes/<int:id_sessoes>', methods=['PUT'])
+@sessao_bp.route('/sessoes/<int:id_sessao>', methods=['PUT'])
 def updateSessao(id_sessao):
     try:
         data = request.get_json()
-        sessao = SessaoController.update(id_sala, **data)
-        return jsonify({'updated': updated}), 200
 
+        for field in ['data_hora', 'filme_id', 'sala_id']:
+            if field in data and data[field] == "":
+                data[field] = None
+
+        sessao = SessaoController.update(id_sessao, **data)
+
+        return jsonify({
+            'message': 'Sessão foi atualizada com sucesso',
+            'sessao': SessaoController._formatSessaoOutput(sessao)
+        }), 200
+
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
     except Exception as e:
-        return jsonify({'error': str(e)}), 200
+        return jsonify({
+            'error': 'Erro interno ao atualizar sessão',
+            'details': str(e)
+        }), 500
 
 @sessao_bp.route('/sessoes/<int:id_sessao>', methods=['DELETE'])
-def deleteSessao(id_sessao):
+def deleteSessao(id_sessao=int):
     try:
-        sessao = SessaoController.readById(id_sessao)
+        sessao = SessaoController.delete(id_sessao)
         if not sessao:
-            return jsonify({"error": "Sessão não foi encontrada, portanto não foi deletada"}), 404
-        SalaController.delete(id_sessao)
-        return jsonify({"deleted": "Sessão foi deletada com sucesso"}), 200
-
+            return jsonify({"error": "Sessão não encontrada, portanto não foi deletada"}), 404
+        return jsonify({
+            "message": "Sessão deletada com sucesso",
+        }), 200
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 404
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({
+            "error": "Erro ao deletar sessão",
+            "details": str(e)
+        }), 500

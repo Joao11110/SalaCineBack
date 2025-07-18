@@ -1,5 +1,5 @@
-from Model.Sala import Sala
 from peewee import DoesNotExist
+from Model.Sala import Sala
 
 class SalaController:
     @staticmethod
@@ -42,7 +42,7 @@ class SalaController:
         except DoesNotExist as e:
             raise ValueError(str(e))
         except Exception as e:
-            raise ValueError(f"Error updating sala: {str(e)}")
+            raise ValueError(f"Erro ao atualizar a sala: {str(e)}")
 
     @staticmethod
     def delete(id_sala):
@@ -52,7 +52,7 @@ class SalaController:
         except DoesNotExist as e:
             raise ValueError(str(e))
         except Exception as e:
-            raise ValueError(f"Error deleting sala: {str(e)}")
+            raise ValueError(f"Erro ao deletar a sala: {str(e)}")
 
     @staticmethod
     def _formatSalaOutput(sala) -> dict:

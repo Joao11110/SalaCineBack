@@ -1,5 +1,5 @@
-from peewee import DoesNotExist, JOIN
 from Model.Filme import Filme, Genero, FilmeGenero
+from peewee import DoesNotExist, JOIN
 from Model.BaseModel import db
 
 class FilmeController:
@@ -25,7 +25,7 @@ class FilmeController:
                 return filme
         except Exception as e:
             db.rollback()
-            raise ValueError(f"Erro ao cadastrar filme: {str(e)}")
+            raise ValueError(f"Error creating Filme: {str(e)}")
 
     @classmethod
     def read(cls) -> list[dict]:
@@ -48,13 +48,13 @@ class FilmeController:
         except DoesNotExist as e:
             raise ValueError(str(e))
         except Exception as e:
-            raise ValueError(f"Error updating movie: {str(e)}")
+            raise ValueError(f"Erro ao atualizar filme: {str(e)}")
         except DoesNotExist:
             db.rollback()
-            raise ValueError("Filme não encontrado")
+            raise ValueError("Filme não foi encontrado")
         except Exception as e:
             db.rollback()
-            raise ValueError(f"Error updating movie: {str(e)}")
+            raise ValueError(f"Erro ao atualizar o filme: {str(e)}")
 
     @staticmethod
     def delete(id_filme=int):

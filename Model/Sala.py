@@ -27,9 +27,9 @@ class Sala(BaseModel):
         with cls._meta.database.atomic():
             query = super().update(**kwargs).where(cls.id_sala == id_sala)
             updated = query.execute()
-            
+
             if updated == 0:
-                raise DoesNotExist("Sala não encontrada")
+                raise DoesNotExist("Sala não foi encontrada")
 
             return cls.get(cls.id_sala == id_sala)
 

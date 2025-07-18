@@ -1,7 +1,7 @@
 from Model.Filme import Filme, Genero, FilmeGenero
-from Model.Sala import Sala
 from Model.Sessao import Sessao
 from Model.BaseModel import db
+from Model.Sala import Sala
 
 def initializeDB():
     try:

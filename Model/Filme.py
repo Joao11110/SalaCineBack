@@ -1,11 +1,11 @@
 from peewee import (
+    ManyToManyField,
+    ForeignKeyField,
+    IntegerField,
+    CompositeKey,
     AutoField,
     CharField,
-    IntegerField,
-    ForeignKeyField,
-    BlobField,
-    CompositeKey,
-    ManyToManyField
+    BlobField
 )
 
 from Model.BaseModel import BaseModel

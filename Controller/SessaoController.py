@@ -1,10 +1,10 @@
-from datetime import datetime
-from Model.Sessao import Sessao
 from Controller.FilmeController import FilmeController
 from Controller.SalaController import SalaController
+from peewee import DoesNotExist
+from Model.Sessao import Sessao
 from Model.Filme import Filme
 from Model.Sala import Sala
-from peewee import DoesNotExist
+from datetime import datetime
 
 class SessaoController:
     @staticmethod
@@ -24,7 +24,7 @@ class SessaoController:
         except DoesNotExist:
             raise ValueError("Filme ou Sala não encontrado")
         except Exception as e:
-            raise ValueError(f"Error creating session: {str(e)}")
+            raise ValueError(f"Erro ao criar uma sessão: {str(e)}")
 
     @staticmethod
     def read():
@@ -36,8 +36,7 @@ class SessaoController:
                     .order_by(Sessao.data_hora)
                     .objects())
         except Exception as e:
-            print(f"Error in read: {str(e)}")
-            raise ValueError(f"Error reading sessions: {str(e)}")
+            raise ValueError(f"Error ao ler as sessões: {str(e)}")
 
     @staticmethod
     def readById(id_sessao):
@@ -52,20 +51,38 @@ class SessaoController:
         except DoesNotExist:
             return None
         except Exception as e:
-            print(f"Error in readById: {str(e)}")
-            raise ValueError(f"Error reading session: {str(e)}")
+            print(f"Error ao ler pelo ID: {str(e)}")
+            raise ValueError(f"Error ao ler a sessao: {str(e)}")
 
     @staticmethod
     def readByData(data=None):
         return Sessao.readByDate(data)
 
     @staticmethod
-    def update(id_sala=int, **kwargs):
-        return Sessao.update(id_sessao, **kwargs)
+    def update(id_sessao, **kwargs):
+        try:
+            if 'data_hora' in kwargs:
+                try:
+                    kwargs['data_hora'] = datetime.fromisoformat(kwargs['data_hora'])
+                except ValueError:
+                    raise ValueError("Formato de data/hora inválido. Use o formato (YYYY-MM-DDTHH:MM:SS)")
+
+            return Sessao.update(id_sessao, **kwargs)
+
+        except DoesNotExist as e:
+            raise ValueError(str(e))
+        except Exception as e:
+            raise ValueError(f"Error: {str(e)}")
 
     @staticmethod
-    def delete(id_sala=int):
-        return Sessao.delete(id_sessao)
+    def delete(id_sessao=int):
+        try:
+            deleted_count = Sessao.delete(id_sessao)
+            return deleted_count > 0
+        except DoesNotExist as e:
+            raise ValueError(str(e))
+        except Exception as e:
+            raise ValueError(f"Error: {str(e)}")
 
     @staticmethod
     def _formatSessaoOutput(sessao) -> dict:
