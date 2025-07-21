@@ -1,4 +1,4 @@
-from peewee import AutoField, DateTimeField, ForeignKeyField
+from peewee import AutoField, DateTimeField, ForeignKeyField, DoesNotExist
 from Model.BaseModel import BaseModel
 from datetime import datetime
 from Model.Filme import Filme

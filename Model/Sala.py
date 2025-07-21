@@ -1,6 +1,5 @@
-from peewee import AutoField, IntegerField, CharField
+from peewee import AutoField, IntegerField, CharField, DoesNotExist
 from Model.BaseModel import BaseModel
-from peewee import DoesNotExist
 
 class Sala(BaseModel):
     id_sala = AutoField(primary_key=True)
@@ -38,7 +37,7 @@ class Sala(BaseModel):
         with super()._meta.database.atomic():
             sala = cls.get_or_none(cls.id_sala == id_sala)
             if not sala:
-                raise DoesNotExist("Sala não encontrada")
+                raise DoesNotExist("Sala foi não encontrada")
 
             query = super().delete().where(cls.id_sala == id_sala)
             return query.execute()

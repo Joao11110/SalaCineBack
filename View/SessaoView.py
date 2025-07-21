@@ -61,29 +61,24 @@ def readSessoes():
         }), 500
 
 @sessao_bp.route('/sessoes/<int:id_sessao>', methods=['GET'])
-def readSessaoById(id_sessao=int):
+def readSessaoById(id_sessao):
     try:
         sessao = SessaoController.readById(id_sessao)
-        if not sessao:
-            return jsonify({
-                'error': 'Sessão não foi encontrada',
-                'data': None
-            }), 404
 
         return jsonify({
-            'message': 'Sessão recuperada com sucesso',
-            'data': sessao,
+            'sessão': SessaoController._formatSessaoOutput(sessao),
+            'message': 'Sessão recuperada com sucesso'
         }), 200
 
     except ValueError as e:
         return jsonify({
-            'error': str(e),
-            'data': None
-        }), 400
+            'data': None,
+            'error': str(e)
+        }), 404
     except Exception as e:
         return jsonify({
-            'error': 'Erro interno ao buscar sessão',
-            'data': None
+            'sessao': None,
+            'error': 'Erro interno no servidor'
         }), 500
 
 @sessao_bp.route('/sessoes/<int:id_sessao>', methods=['PUT'])

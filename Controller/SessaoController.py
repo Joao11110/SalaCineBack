@@ -41,18 +41,18 @@ class SessaoController:
     @staticmethod
     def readById(id_sessao):
         try:
-            return (Sessao
+            sessao = (Sessao
                     .select(Sessao, Filme, Sala)
                     .join(Filme, on=(Sessao.filme == Filme.id_filme))
                     .join(Sala, on=(Sessao.sala == Sala.id_sala))
                     .where(Sessao.id_sessao == id_sessao)
-                    .objects()
                     .get())
+
+            return sessao
         except DoesNotExist:
-            return None
+            raise ValueError(f"Sessão com ID {id_sessao} não encontrada")
         except Exception as e:
-            print(f"Error ao ler pelo ID: {str(e)}")
-            raise ValueError(f"Error ao ler a sessao: {str(e)}")
+            raise ValueError("Erro ao buscar dados da sessão")
 
     @staticmethod
     def readByData(data=None):
