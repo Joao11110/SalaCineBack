@@ -85,7 +85,20 @@ class SessaoController:
             raise ValueError(f"Error: {str(e)}")
 
     @staticmethod
-    def _formatSessaoOutput(sessao) -> dict:
+    def _formatSessaoOutput(sessao):
+        
+        if isinstance(sessao.data_hora, str):
+            try:
+                if "+" in sessao.data_hora:
+                    sessao.data_hora = datetime.strptime(
+                        sessao.data_hora.split("+")[0].strip(),
+                        "%Y-%m-%d %H:%M:%S"
+                    )
+                else:
+                    sessao.data_hora = datetime.strptime(sessao.data_hora, "%Y-%m-%d %H:%M:%S")
+            except ValueError as e:
+                raise ValueError(f"Formato de data/hora inválido: {sessao.data_hora}") from e
+
         return {
             'id_sessao': sessao.id_sessao,
             'data_hora': sessao.data_hora.isoformat(),

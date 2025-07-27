@@ -58,6 +58,7 @@ def readSessoes():
     except Exception as e:
         return jsonify({
             'error': 'Erro interno ao buscar sessões',
+            'details': str(e)
         }), 500
 
 @sessao_bp.route('/sessoes/<int:id_sessao>', methods=['GET'])
